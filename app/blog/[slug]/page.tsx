@@ -1,5 +1,4 @@
- 'use client';
-
+// app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { blogs } from "@/lib/blogs";
 import Image from "next/image";
@@ -54,7 +53,7 @@ export default function BlogDetailPage({ params }: Params) {
       {/* Back Button */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-6">
         <Link
-          href="/"
+          href="/blog"
           className="inline-flex items-center text-blue-600 hover:underline text-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -62,7 +61,7 @@ export default function BlogDetailPage({ params }: Params) {
         </Link>
       </div>
 
-      {/* Main Blog Content */}
+      {/* Blog Content */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +69,6 @@ export default function BlogDetailPage({ params }: Params) {
         className="max-w-4xl mx-auto mt-8 px-4 sm:px-6 pb-20"
       >
         <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl p-6 sm:p-10">
-          {/* Content */}
           <article className="prose dark:prose-invert prose-lg sm:prose-xl max-w-none prose-slate dark:prose-sky leading-relaxed tracking-wide">
             {blog.content || "Blog content is not available yet."}
           </article>
