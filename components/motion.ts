@@ -1,3 +1,3 @@
 'use client';
-
-export { motion } from 'framer-motion';
+import { motion as _motion } from 'framer-motion';
+export const motion = _motion;

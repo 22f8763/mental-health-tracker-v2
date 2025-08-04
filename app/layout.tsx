@@ -1,6 +1,4 @@
  // app/layout.tsx
-'use client'
-
 import './globals.css'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
