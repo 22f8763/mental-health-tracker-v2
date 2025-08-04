@@ -1,10 +1,14 @@
- // app/blog/[slug]/page.tsx
+
+'use client';
+
 import { notFound } from "next/navigation";
 import { blogs } from "@/lib/blogs";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock, User } from "lucide-react";
-import { motion } from "framer-motion";
+
+// ✅ Import safe wrapper instead of directly from 'framer-motion'
+import { motion } from "@/components/motion";
 
 type PageProps = {
   params: {
