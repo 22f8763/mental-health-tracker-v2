@@ -7,10 +7,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock, User } from "lucide-react";
 
-// ✅ Import safe wrapper instead of directly from 'framer-motion'
+// Import safe wrapper instead of directly from 'framer-motion'
 import { motion } from "@/components/motion";
 
-export default function BlogDetailPage({ params }: { params: { slug: string } }) {
+function BlogDetailPage({ params }: { params: { slug: string } }) {
   const blog = blogs.find((b) => b.slug === params.slug);
 
   if (!blog) return notFound();
