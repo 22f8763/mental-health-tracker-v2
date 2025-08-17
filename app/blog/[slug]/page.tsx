@@ -1,19 +1,21 @@
-
-'use client';
-
-import { notFound } from "next/navigation";
+ import { notFound } from "next/navigation";
 import { blogs } from "@/lib/blogs";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock, User } from "lucide-react";
 
-// Import safe wrapper instead of directly from 'framer-motion'
-import { motion } from "@/components/motion";
+interface BlogDetailPageProps {
+  params: {
+    slug: string;
+  };
+}
 
-function BlogDetailPage({ params }: { params: { slug: string } }) {
+export default function BlogDetailPage({ params }: BlogDetailPageProps) {
   const blog = blogs.find((b) => b.slug === params.slug);
 
-  if (!blog) return notFound();
+  if (!blog) {
+    notFound();
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -27,52 +29,40 @@ function BlogDetailPage({ params }: { params: { slug: string } }) {
       </Link>
 
       {/* Title */}
-      <motion.h1
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-4xl font-bold mb-4 text-gray-800"
-      >
+      <h1 className="text-4xl font-bold mb-4 text-gray-800">
         {blog.title}
-      </motion.h1>
+      </h1>
 
       {/* Metadata */}
       <div className="flex items-center text-sm text-gray-500 mb-6 space-x-4">
         <div className="flex items-center">
           <User className="w-4 h-4 mr-1" />
-          {blog.author}
+          {blog.author || "Author"}
         </div>
         <div className="flex items-center">
           <Clock className="w-4 h-4 mr-1" />
-          {blog.date}
+          {blog.date || "Date"}
         </div>
       </div>
 
       {/* Blog image */}
-      <motion.div
-        className="relative w-full h-64 mb-6 rounded-xl overflow-hidden shadow"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7 }}
-      >
+      <div className="relative w-full h-64 mb-6 rounded-xl overflow-hidden shadow">
         <Image
           src={blog.image}
           alt={blog.title}
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: 'cover' }}
           className="rounded-xl"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-      </motion.div>
+      </div>
 
       {/* Blog content */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="prose prose-lg max-w-none text-gray-800"
-      >
-        <p>{blog.content}</p>
-      </motion.div>
+      <div className="prose prose-lg max-w-none text-gray-800">
+        <div style={{ whiteSpace: 'pre-line' }}>
+          {blog.content}
+        </div>
+      </div>
     </div>
   );
 }

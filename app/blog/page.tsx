@@ -1,9 +1,9 @@
- 'use client'
+'use client'
 
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { blogs } from '@/lib/blogs' // ✅ FIXED: import from lib
+import { blogs } from '@/lib/blogs'
 
 export default function BlogPage() {
   const router = useRouter()

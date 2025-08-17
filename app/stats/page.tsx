@@ -1,5 +1,8 @@
  "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -36,6 +39,31 @@ const sampleSentimentData = [
 const COLORS = ["#00C49F", "#FFBB28", "#FF4444"];
 
 export default function StatsPage() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/login"); // redirect if not logged in
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [supabase, router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-white">
+        Checking authentication...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-gray-950 px-4 pt-24 pb-8 text-white">
       <h1 className="text-4xl font-bold mb-8 text-center">📊 Mood & Journal Stats</h1>
@@ -87,7 +115,7 @@ export default function StatsPage() {
                   outerRadius={90}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }: { name?: string; percent?: number }) =>
+                  label={({ name, percent }) =>
                     `${name ?? "Unknown"} (${percent !== undefined ? (percent * 100).toFixed(0) : "0"}%)`
                   }
                 >

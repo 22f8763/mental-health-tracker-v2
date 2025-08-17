@@ -27,12 +27,27 @@ export default function Navbar() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const name = session?.user?.user_metadata?.name ?? null;
-      setUserName(name);
+
+      const email = session?.user?.email;
+
+      if (email) {
+        try {
+          // Always fetch latest from MongoDB
+          const res = await fetch(`/api/get-user?email=${encodeURIComponent(email)}`);
+          if (res.ok) {
+            const data = await res.json();
+            setUserName(data?.name ?? null);
+          } else {
+            setUserName(session?.user?.user_metadata?.name ?? null);
+          }
+        } catch {
+          setUserName(session?.user?.user_metadata?.name ?? null);
+        }
+      }
     };
 
     fetchUser();
-  }, []);
+  }, [supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -50,7 +65,6 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm z-50 px-6 py-3">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Logo */}
         <Link href="/" className="text-xl font-extrabold text-indigo-600">
           🧠 MHT
         </Link>
@@ -81,7 +95,10 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Button */}
-        <button className="md:hidden" onClick={() => setIsMobileOpen(!isMobileOpen)}>
+        <button
+          className="md:hidden"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+        >
           {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,7 +21,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         router.push(redirect);
       } else {
@@ -39,21 +41,32 @@ export default function LoginPage() {
 
     setSending(true);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
-      },
-    });
+    try {
+      // 1️⃣ Send Supabase Magic Link with user metadata
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback`,
+          data: {
+            name: name,
+          },
+        },
+      });
 
-    if (error) {
-      toast.error("Something went wrong. Try again.");
-    } else {
-      toast.success("Magic link sent! Check your email.");
+      if (error) {
+        console.error("Auth error:", error);
+        toast.error(error.message || "Something went wrong. Please try again.");
+      } else {
+        toast.success("Magic link sent! Check your email.");
+      }
+    } catch (err) {
+      console.error("Error during sign in:", err);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setSending(false);
     }
-
-    setSending(false);
   };
+
 
   if (loading) {
     return (
@@ -116,11 +129,10 @@ export default function LoginPage() {
             whileTap={{ scale: 0.95 }}
             disabled={sending}
             type="submit"
-            className={`w-full py-3 rounded-md text-white text-lg font-semibold transition duration-300 ${
-              sending
+            className={`w-full py-3 rounded-md text-white text-lg font-semibold transition duration-300 ${sending
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-purple-600 hover:bg-purple-700"
-            }`}
+              }`}
           >
             {sending ? "Sending Link..." : "Send Magic Link"}
           </motion.button>

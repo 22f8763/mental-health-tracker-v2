@@ -1,122 +1,151 @@
- 'use client'
+ import React, { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import DesktopNav from './components/Navigation/DesktopNav';
+import MobileNav from './components/Navigation/MobileNav';
+import ViewContainer from './components/ViewContainer/ViewContainer';
+import DashboardView from './views/DashboardView';
+import JournalView from './views/JournalView';
+import ToolsView from './views/ToolsView';
+import AnalyticsView from './views/AnalyticsView';
+import ResourcesView from './views/ResourcesView';
+import { MoodData, TherapeuticTool } from './types/mentalHealthTypes';
+import { Wind } from 'lucide-react';
 
-import { useState, useEffect, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+export default function MentalHealthTracker() {
+  // Core States
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [moodScore, setMoodScore] = useState(5);
+  const [journalEntry, setJournalEntry] = useState('');
+  const [anxietyLevel, setAnxietyLevel] = useState(3);
+  const [sleepHours, setSleepHours] = useState(7);
+  const [energyLevel, setEnergyLevel] = useState(3);
+  const [gratitudeList, setGratitudeList] = useState(['', '', '']);
+  const [goals, setGoals] = useState<any[]>([]);
+  const [viewTransition, setViewTransition] = useState(false);
 
-export default function JournalPage() {
-  const [entry, setEntry] = useState('');
-  const [analysis, setAnalysis] = useState('');
-  const [displayedText, setDisplayedText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  // Sample data
+  const therapeuticTools: TherapeuticTool[] = [
+    {
+      id: 'breathing',
+      title: 'Guided Breathing',
+      description: '4-7-8 breathing technique for anxiety relief',
+      icon: Wind,
+      color: 'from-blue-500 to-cyan-500',
+      category: 'relaxation'
+    },
+    // ... other tools
+  ];
 
-  const handleAnalyze = async () => {
-    if (!entry.trim()) {
-      toast.warning('📝 Please write something first!');
-      return;
-    }
+  const weeklyMoodData: MoodData[] = [
+    { day: 'Mon', mood: 6, anxiety: 4, energy: 5, sleep: 7 },
+    // ... other days
+  ];
 
-    setLoading(true);
-    setAnalysis('');
-    setDisplayedText('');
-
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: entry })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.message) {
-        toast.error('AI response failed. Try again!');
-      } else {
-        setAnalysis(data.message);
-      }
-    } catch (err) {
-      toast.error('⚠️ Connection to AI failed.');
-    } finally {
-      setLoading(false);
-    }
+  // Handle navigation with transitions
+  const handleNavigation = (view: string) => {
+    setViewTransition(true);
+    setTimeout(() => {
+      setCurrentView(view);
+      setViewTransition(false);
+    }, 300);
   };
 
-  // ✅ FIXED: Typing animation — includes first character correctly
-  useEffect(() => {
-    if (!analysis) return;
-
-    let i = 0;
-    setDisplayedText('');
-
-    const interval = setInterval(() => {
-      setDisplayedText((prev) => prev + analysis[i]);
-      i++;
-
-      if (i >= analysis.length) clearInterval(interval);
-    }, 15);
-
-    return () => clearInterval(interval);
-  }, [analysis]);
-
   return (
-    <main className="min-h-screen w-full bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] px-4 py-10 flex items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl p-8 sm:p-12 text-white"
-      >
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-8 drop-shadow tracking-tight">
-          🧘 Journal Insight
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 z-0"></div>
 
-        <textarea
-          rows={6}
-          value={entry}
-          onChange={(e) => setEntry(e.target.value)}
-          placeholder="Write freely... what's on your mind today?"
-          className="w-full p-4 sm:p-5 bg-white/10 border border-white/20 rounded-xl placeholder:text-white/60 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none transition-all duration-200 shadow-inner"
-        />
+      <DesktopNav currentView={currentView} onNavigate={handleNavigation} />
+      
+      <main className="relative z-10 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <AnimatePresence mode="wait">
+            {!viewTransition && (
+              <>
+                {currentView === 'dashboard' && (
+                  <ViewContainer key="dashboard">
+                    <DashboardView
+                      moodScore={moodScore}
+                      setMoodScore={setMoodScore}
+                      anxietyLevel={anxietyLevel}
+                      setAnxietyLevel={setAnxietyLevel}
+                      energyLevel={energyLevel}
+                      setEnergyLevel={setEnergyLevel}
+                      sleepHours={sleepHours}
+                      setSleepHours={setSleepHours}
+                      goals={goals}
+                      setGoals={setGoals}
+                      therapeuticTools={therapeuticTools}
+                      handleNavigation={handleNavigation}
+                    />
+                  </ViewContainer>
+                )}
+                {currentView === 'journal' && (
+                  <ViewContainer key="journal">
+                    <JournalView
+                      journalEntry={journalEntry}
+                      setJournalEntry={setJournalEntry}
+                      gratitudeList={gratitudeList}
+                      setGratitudeList={setGratitudeList}
+                    />
+                  </ViewContainer>
+                )}
+                {currentView === 'tools' && (
+                  <ViewContainer key="tools">
+                    <ToolsView />
+                  </ViewContainer>
+                )}
+                {currentView === 'analytics' && (
+                  <ViewContainer key="analytics">
+                    <AnalyticsView weeklyMoodData={weeklyMoodData} />
+                  </ViewContainer>
+                )}
+                {currentView === 'resources' && (
+                  <ViewContainer key="resources">
+                    <ResourcesView />
+                  </ViewContainer>
+                )}
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
 
-        <button
-          onClick={handleAnalyze}
-          disabled={loading || !entry.trim()}
-          className="mt-6 w-full py-3 rounded-xl font-semibold tracking-wide bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-              Analyzing...
-            </>
-          ) : (
-            '🔍 Analyze Mood'
-          )}
-        </button>
+      <MobileNav currentView={currentView} onNavigate={handleNavigation} />
 
-        <AnimatePresence>
-          {displayedText && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
-              transition={{ duration: 0.5 }}
-              className="mt-10 bg-white/20 border border-white/30 rounded-2xl shadow-lg p-6 sm:p-8"
-            >
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-cyan-100">
-                🧠 AI's Perspective:
-              </h2>
-              <p className="whitespace-pre-line leading-relaxed text-white/90 font-light text-base">
-                {displayedText}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      <ToastContainer position="top-center" theme="dark" />
-    </main>
+      <style jsx global>{`
+        body {
+          overflow-x: hidden;
+        }
+        
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: linear-gradient(45deg, #10b981, #06b6d4);
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: linear-gradient(45deg, #10b981, #06b6d4);
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        input {
+          background: transparent;
+          border: none;
+          width: 100%;
+          color: white;
+          outline: none;
+        }
+      `}</style>
+    </div>
   );
 }
